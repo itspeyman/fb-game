@@ -1,0 +1,139 @@
+{ "frames": {
+   "Antihero-idle-left 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 1.aseprite": {
+    "frame": { "x": 89, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 2.aseprite": {
+    "frame": { "x": 178, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 3.aseprite": {
+    "frame": { "x": 267, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 4.aseprite": {
+    "frame": { "x": 356, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 5.aseprite": {
+    "frame": { "x": 445, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 6.aseprite": {
+    "frame": { "x": 534, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 7.aseprite": {
+    "frame": { "x": 623, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 8.aseprite": {
+    "frame": { "x": 712, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 9.aseprite": {
+    "frame": { "x": 801, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 10.aseprite": {
+    "frame": { "x": 890, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 11.aseprite": {
+    "frame": { "x": 979, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 12.aseprite": {
+    "frame": { "x": 1068, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 13.aseprite": {
+    "frame": { "x": 1157, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   },
+   "Antihero-idle-left 14.aseprite": {
+    "frame": { "x": 1246, "y": 0, "w": 89, "h": 232 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 89, "h": 232 },
+    "sourceSize": { "w": 89, "h": 232 },
+    "duration": 80
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.10.1-x64",
+  "image": "Antihero-idle-left.png",
+  "format": "RGBA8888",
+  "size": { "w": 1335, "h": 232 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

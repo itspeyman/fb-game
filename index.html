@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Animated 2D Fighting Game (PSP Look)</title>
+  <style>
+    body {
+      margin: 0;
+      background: #222;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
+
+    /* PSP container with your PSP background image (1419×622). */
+    #pspContainer {
+      position: relative;
+      width: 1419px;
+      height: 622px;
+      margin: 20px auto;
+      background: url('assets/psp_bg.gif') no-repeat center center;
+      background-size: cover;
+      transform: scale(0.8);
+      transform-origin: top center;
+    }
+
+    /* The canvas inside the PSP container. */
+    #gameCanvas {
+      position: absolute;
+      top: 100px;
+      left: 310px;
+      width: 800px;
+      height: 400px;
+      background: #333;
+      z-index: 1;
+    }
+
+    /* Start screen overlay, same coords as canvas. */
+    #startScreen {
+      position: absolute;
+      top: 100px;
+      left: 310px;
+      width: 800px;
+      height: 400px;
+      background: url('assets/start_screen.jpg') no-repeat center center;
+      background-size: cover;
+      z-index: 10;
+    }
+    #startButton {
+      position: absolute;
+      left: 512px; /* relative to #startScreen’s top/left */
+      top: 248px;
+      width: 180px;
+      height: 45px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    /* Instructions as an absolutely-positioned child of the PSP container.
+       That way, it remains centered relative to the PSP/canvas even if we zoom. */
+    .instructions {
+      position: absolute;
+      top: 610px;             /* Place it below the canvas area (622 - 400 ~ 222 left, adjust as needed) */
+      left: 50%;              /* horizontally center within PSP container */
+      transform: translateX(-50%);
+      width: auto;            /* let it size itself */
+      text-align: center;
+      display: none;          /* shown after start button is clicked */
+      color: #fff;
+    }
+
+    .restart-container {
+      text-align: center;
+      margin-top: -120px;
+    }
+    #restartButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      display: none;
+      margin-top: 10px;
+    }
+    #restartButton:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      color: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <!-- PSP Container -->
+  <div id="pspContainer">
+    <!-- Canvas (the game screen) -->
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <!-- Start screen overlay -->
+    <div id="startScreen">
+      <button id="startButton" disabled>LETSUGO!!</button>
+    </div>
+
+    <!-- Instructions are now absolutely positioned IN the PSP container -->
+    <div class="instructions">
+      <p><strong>Controls:</strong> A (left), D (right), W (jump), B (attack)</p>
+    </div>
+  </div>
+
+  <!-- Respawn button remains outside if you want, or you can move it inside pspContainer as well -->
+  <div class="restart-container">
+    <button id="restartButton">Respawn</button>
+  </div>
+
+  <script>
+    // MAIN FIGHT MUSIC
+    const fightMusic = new Audio("assets/fight_music.mp3");
+    fightMusic.loop = true;
+
+    // SHORT END CLIP
+    const endClip = new Audio("assets/ending_clip.mp3");
+    endClip.loop = false;
+
+    // Utility
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const restartButton = document.getElementById("restartButton");
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
+
+    let gameOver = false;   // only one declaration
+    let timeLeft = 99;
+    let timerInterval = null;
+
+    const maxHealth = 200;
+    const gravity = 0.5;
+
+    // Preload images
+    function preloadImages(imageList, callback) {
+      let loadedCount = 0;
+      const total = imageList.length;
+      imageList.forEach(img => {
+        if (img.complete) {
+          loadedCount++;
+          if (loadedCount === total) callback();
+        } else {
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === total) callback();
+          };
+          img.onerror = () => {
+            console.error("Error loading image:", img.src);
+            loadedCount++;
+            if (loadedCount === total) callback();
+          };
+        }
+      });
+    }
+
+    // Images
+    const bgImage = new Image();
+    bgImage.src = 'assets/Scene-animated.png';
+
+    const player1IdleImg = new Image();
+    player1IdleImg.src = 'assets/player1_idle.png';
+    const player1AttackImg = new Image();
+    player1AttackImg.src = 'assets/player1_attack.png';
+
+    const player2IdleImg = new Image();
+    player2IdleImg.src = 'assets/player2_idle.png';
+    const player2AttackImg = new Image();
+    player2AttackImg.src = 'assets/player2_attack.png';
+
+    const imagesToPreload = [
+      bgImage,
+      player1IdleImg, player1AttackImg,
+      player2IdleImg, player2AttackImg
+    ];
+    preloadImages(imagesToPreload, () => {
+      console.log("All images preloaded.");
+      startButton.disabled = false; // enable "LETSUGO!!"
+    });
+
+    // Animated BG
+    class AnimatedBackground {
+      constructor(frameCount, frameWidth, frameHeight, animationSpeed) {
+        this.spriteSheet = bgImage;
+        this.frameCount = frameCount;
+        this.frameWidth = frameWidth;
+        this.frameHeight = frameHeight;
+        this.animationSpeed = animationSpeed;
+        this.currentFrame = 0;
+        this.frameTimer = 0;
+      }
+      update(deltaTime) {
+        this.frameTimer += deltaTime;
+        if (this.frameTimer >= this.animationSpeed) {
+          this.currentFrame = (this.currentFrame + 1) % this.frameCount;
+          this.frameTimer = 0;
+        }
+      }
+      draw(ctx) {
+        const sx = this.currentFrame * this.frameWidth;
+        ctx.drawImage(
+          this.spriteSheet,
+          sx, 0, this.frameWidth, this.frameHeight,
+          0, 0, canvas.width, canvas.height
+        );
+      }
+    }
+
+    // Fighter class
+    class Fighter {
+      constructor(x, y, controls, animations) {
+        this.x = x;
+        this.y = y;
+        this.controls = controls;
+        this.animations = animations;
+
+        this.currentAction = "idle";
+        this.currentAnimation = animations.idle;
+        this.currentFrame = 0;
+        this.accumulatedTime = 0;
+
+        this.width  = this.currentAnimation.frameWidth;
+        this.height = this.currentAnimation.frameHeight;
+
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.speed = 5;
+        this.jumpStrength = -12;
+        this.onGround = false;
+
+        this.health = maxHealth;
+        this.isAttacking = false;
+        this.attackCooldown = 1000;
+        this.lastAttackTime = 0;
+
+        this.attackBox = {
+          offsetX: this.width,
+          offsetY: 20,
+          width: this.width,
+          height: 20
+        };
+        this.facing = "right";
+      }
+
+      switchAction(newAction) {
+        if (this.currentAction !== newAction) {
+          this.currentAction = newAction;
+          this.currentAnimation = this.animations[newAction];
+          this.currentFrame = 0;
+          this.accumulatedTime = 0;
+          this.width  = this.currentAnimation.frameWidth;
+          this.height = this.currentAnimation.frameHeight;
+          this.attackBox.offsetX = this.width;
+          this.attackBox.width   = this.width;
+          if (newAction === "idle") {
+            this.isAttacking = false;
+          }
+        }
+      }
+
+      updateAnimation(dt) {
+        this.accumulatedTime += dt;
+        if (this.currentAction === "idle") {
+          this.currentFrame =
+            Math.floor(this.accumulatedTime / this.currentAnimation.animationSpeed)
+            % this.currentAnimation.frameCount;
+        } else if (this.currentAction === "attack") {
+          const frame = Math.floor(
+            this.accumulatedTime / this.currentAnimation.animationSpeed
+          );
+          if (frame < this.currentAnimation.frameCount) {
+            this.currentFrame = frame;
+          } else {
+            this.switchAction("idle");
+          }
+        }
+      }
+
+      draw(dt) {
+        this.updateAnimation(dt);
+        const sx = this.currentFrame * this.width;
+        ctx.drawImage(
+          this.currentAnimation.spriteSheet,
+          sx, 0, this.width, this.height,
+          this.x, this.y, this.width, this.height
+        );
+      }
+
+      update(dt) {
+        this.x += this.velocityX;
+        this.y += this.velocityY;
+        if (this.y + this.height < canvas.height) {
+          this.velocityY += 0.5;
+          this.onGround = false;
+        } else {
+          this.velocityY = 0;
+          this.y = canvas.height - this.height;
+          this.onGround = true;
+        }
+        this.draw(dt);
+      }
+
+      attack() {
+        const now = Date.now();
+        if (!this.isAttacking && now - this.lastAttackTime >= this.attackCooldown) {
+          this.isAttacking = true;
+          this.lastAttackTime = now;
+          this.switchAction("attack");
+        }
+      }
+    }
+
+    // Instantiate BG + fighters
+    const background = new AnimatedBackground(10, 800, 400, 150);
+
+    const player1Animations = {
+      idle: {
+        spriteSheet: player1IdleImg,
+        frameCount: 6,
+        frameWidth: 71,
+        frameHeight: 190,
+        animationSpeed: 100
+      },
+      attack: {
+        spriteSheet: player1AttackImg,
+        frameCount: 7,
+        frameWidth: 124,
+        frameHeight: 189,
+        animationSpeed: 80
+      }
+    };
+    const player1 = new Fighter(
+      100,
+      canvas.height - 190,
+      { left: 'a', right: 'd', jump: 'w', attack: 'b' },
+      player1Animations
+    );
+
+    const player2Animations = {
+      idle: {
+        spriteSheet: player2IdleImg,
+        frameCount: 15,
+        frameWidth: 89,
+        frameHeight: 232,
+        animationSpeed: 100
+      },
+      attack: {
+        spriteSheet: player2AttackImg,
+        frameCount: 7,
+        frameWidth: 160,
+        frameHeight: 232,
+        animationSpeed: 100
+      }
+    };
+    const player2 = new Fighter(
+      600,
+      canvas.height - 232,
+      null,
+      player2Animations
+    );
+    player2.aiState = "approach";
+    player2.stateTimer = 0;
+    player2.attackThreshold = getRandom(80, 150);
+    player2.attackBox.offsetY = 50;
+    player2.attackBox.width   = 120;
+    player2.attackBox.height  = 120;
+
+    const keys = {};
+    window.addEventListener('keydown', (event) => {
+      const k = event.key.toLowerCase();
+      keys[k] = true;
+      if (player1.controls && k === player1.controls.attack) {
+        player1.attack();
+      }
+    });
+    window.addEventListener('keyup', (event) => {
+      keys[event.key.toLowerCase()] = false;
+    });
+
+    function detectCollision(attacker, defender) {
+      const box = {
+        x: attacker.x + attacker.attackBox.offsetX,
+        y: attacker.y + attacker.attackBox.offsetY,
+        width: attacker.attackBox.width,
+        height: attacker.attackBox.height
+      };
+      return (
+        box.x < defender.x + defender.width &&
+        box.x + box.width > defender.x &&
+        box.y < defender.y + defender.height &&
+        box.y + box.height > defender.y
+      );
+    }
+    function drawHealthBar(x, y, health, reversed = false) {
+      const barWidth = 200;
+      const barHeight = 20;
+      ctx.strokeStyle = 'white';
+      ctx.strokeRect(x, y, barWidth, barHeight);
+      const healthWidth = barWidth * (health / maxHealth);
+      ctx.fillStyle = 'red';
+      if (reversed) {
+        ctx.fillRect(x + (barWidth - healthWidth), y, healthWidth, barHeight);
+      } else {
+        ctx.fillRect(x, y, healthWidth, barHeight);
+      }
+    }
+    function checkBoundaries(player) {
+      if (player.x < 0) {
+        player.x = 0;
+      }
+      if (player.x + player.width > canvas.width) {
+        player.x = canvas.width - player.width;
+      }
+    }
+    function preventHugging(p1, p2) {
+      const minDistance = 70;
+      const center1 = p1.x + p1.width / 2;
+      const center2 = p2.x + p2.width / 2;
+      const distance = Math.abs(center1 - center2);
+      if (distance < minDistance) {
+        const overlap = minDistance - distance;
+        if (center1 < center2) {
+          p1.x -= overlap / 2;
+          p2.x += overlap / 2;
+        } else {
+          p1.x += overlap / 2;
+          p2.x -= overlap / 2;
+        }
+      }
+    }
+    function aiBehavior() {
+      if (player1.x > player2.x) {
+        player2.attackBox.offsetX = player2.width;
+      } else {
+        player2.attackBox.offsetX = -player2.attackBox.width;
+      }
+      const diffX = player1.x - player2.x;
+      const distance = Math.abs(diffX);
+      const speedFactor = getRandom(80, 120) / 100;
+
+      switch (player2.aiState) {
+        case "approach":
+          if (distance > player2.attackThreshold) {
+            player2.velocityX = (diffX > 0)
+              ? player2.speed * speedFactor
+              : -player2.speed * speedFactor;
+          } else {
+            player2.velocityX = 0;
+            player2.aiState = "attack";
+            player2.stateTimer = 0;
+          }
+          break;
+        case "attack":
+          if (player2.stateTimer === 0) {
+            player2.attack();
+            player2.stateTimer = 10;
+            player2.velocityX = 0;
+          } else {
+            player2.stateTimer--;
+            if (player2.stateTimer <= 0) {
+              player2.aiState = "retreat";
+              player2.stateTimer = getRandom(30, 90);
+            }
+          }
+          break;
+        case "retreat":
+          player2.velocityX = (diffX > 0)
+            ? -player2.speed * speedFactor
+            : player2.speed * speedFactor;
+          player2.stateTimer--;
+          if (player2.stateTimer <= 0) {
+            player2.aiState = "pause";
+            player2.stateTimer = getRandom(20, 60);
+            player2.velocityX = 0;
+          }
+          break;
+        case "pause":
+          player2.velocityX = 0;
+          player2.stateTimer--;
+          if (player2.stateTimer <= 0) {
+            player2.aiState = "approach";
+            player2.attackThreshold = getRandom(80, 150);
+          }
+          break;
+      }
+      if (player1.y + player1.height < player2.y && player2.onGround && Math.random() < 0.05) {
+        player2.velocityY = player2.jumpStrength;
+      }
+    }
+
+    let lastTime = performance.now();
+
+    function updateGame(timestamp) {
+      const deltaTime = timestamp - lastTime;
+      lastTime = timestamp;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      background.update(deltaTime);
+      background.draw(ctx);
+
+      ctx.fillStyle = 'white';
+      ctx.font = '30px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(`Time: ${timeLeft}`, canvas.width / 2, 10);
+
+      if (timeLeft <= 0) {
+        gameOver = true;
+        endGameByTime();
+        return;
+      }
+
+      // Player 1 movement
+      player1.velocityX = 0;
+      if (player1.controls) {
+        if (keys[player1.controls.left]) {
+          player1.velocityX = -player1.speed;
+        } else if (keys[player1.controls.right]) {
+          player1.velocityX = player1.speed;
+        }
+        if (keys[player1.controls.jump] && player1.onGround) {
+          player1.velocityY = player1.jumpStrength;
+        }
+      }
+
+      player1.facing = (player1.x < player2.x) ? "right" : "left";
+      player1.attackBox.offsetX =
+        (player1.facing === "right") ? player1.width : -player1.attackBox.width;
+
+      aiBehavior();
+
+      player1.update(deltaTime);
+      player2.update(deltaTime);
+
+      checkBoundaries(player1);
+      checkBoundaries(player2);
+
+      if (player1.isAttacking && detectCollision(player1, player2)) {
+        player2.health -= 5;
+        player1.isAttacking = false;
+      }
+      if (player2.isAttacking && detectCollision(player2, player1)) {
+        player1.health -= 5;
+        player2.isAttacking = false;
+      }
+
+      preventHugging(player1, player2);
+      checkBoundaries(player1);
+      checkBoundaries(player2);
+
+      drawHealthBar(20, 20, player1.health, false);
+      drawHealthBar(canvas.width - 220, 20, player2.health, true);
+
+      if (player1.health <= 0 || player2.health <= 0) {
+        gameOver = true;
+        endGameByKO();
+        return;
+      }
+
+      if (!gameOver) {
+        requestAnimationFrame(updateGame);
+      }
+    }
+
+    function endGameByTime() {
+      let winner;
+      if (player1.health > player2.health) {
+        winner = 'Player 1 Wins!';
+      } else if (player2.health > player1.health) {
+        winner = 'Bully Wins!';
+      } else {
+        winner = 'Draw!';
+      }
+      displayEndMessage(winner);
+    }
+
+    function endGameByKO() {
+      const winner = (player1.health <= 0) ? 'Bully Wins!' : 'Player 1 Wins!';
+      displayEndMessage(winner);
+    }
+
+    function displayEndMessage(message) {
+      ctx.fillStyle = 'white';
+      ctx.font = '40px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(message, canvas.width / 2, canvas.height / 2);
+
+      clearInterval(timerInterval);
+      fightMusic.pause();
+      fightMusic.currentTime = 0;
+
+      endClip.currentTime = 0;
+      endClip.play().catch(err => {
+        console.warn("Ending clip couldn't play automatically:", err);
+      });
+
+      restartButton.style.display = 'inline-block';
+      restartButton.disabled = true;
+
+      let localTimer = 6;
+      restartButton.textContent = `Respawn (${localTimer}s)`;
+      const countdownInterval = setInterval(() => {
+        localTimer--;
+        if (localTimer > 0) {
+          restartButton.textContent = `Respawn (${localTimer}s)`;
+        } else {
+          clearInterval(countdownInterval);
+          restartButton.textContent = "Respawn";
+          restartButton.disabled = false;
+        }
+      }, 1000);
+    }
+
+    function resetGameState() {
+      gameOver = false;
+      timeLeft = 99;
+
+      player1.health = maxHealth;
+      player2.health = maxHealth;
+
+      player1.x = 100;
+      player1.y = canvas.height - player1.height;
+      player2.x = 600;
+      player2.y = canvas.height - player2.height;
+
+      player2.aiState = "approach";
+      player2.stateTimer = 0;
+
+      player1.isAttacking = false;
+      player1.lastAttackTime = 0;
+      player1.switchAction("idle");
+
+      player2.isAttacking = false;
+      player2.lastAttackTime = 0;
+      player2.switchAction("idle");
+
+      restartButton.style.display = 'none';
+    }
+
+    function startTimerCountdown() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!gameOver) {
+          timeLeft--;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+          }
+        }
+      }, 1000);
+    }
+
+    function startMatchAgain() {
+      resetGameState();
+      lastTime = performance.now();
+      startTimerCountdown();
+      fightMusic.play().catch(err => {
+        console.warn("Music couldn't start on respawn:", err);
+      });
+      requestAnimationFrame(updateGame);
+    }
+
+    // Start button
+    startButton.addEventListener('click', () => {
+      console.log("Start button clicked");
+      startScreen.style.display = 'none';
+
+      // Show instructions
+      document.querySelector('.instructions').style.display = 'block';
+
+      fightMusic.play().catch(err => {
+        console.warn("Fight music couldn't start automatically:", err);
+      });
+
+      startTimerCountdown();
+      requestAnimationFrame(updateGame);
+    });
+
+    // Restart
+    restartButton.addEventListener('click', () => {
+      startMatchAgain();
+    });
+  </script>
+</body>
+</html>

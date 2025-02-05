@@ -1,0 +1,92 @@
+{ "frames": {
+   "Antihero-Run-Forward 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 1.aseprite": {
+    "frame": { "x": 135, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 2.aseprite": {
+    "frame": { "x": 270, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 3.aseprite": {
+    "frame": { "x": 405, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 4.aseprite": {
+    "frame": { "x": 540, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 5.aseprite": {
+    "frame": { "x": 675, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 6.aseprite": {
+    "frame": { "x": 810, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 7.aseprite": {
+    "frame": { "x": 945, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   },
+   "Antihero-Run-Forward 8.aseprite": {
+    "frame": { "x": 1080, "y": 0, "w": 135, "h": 233 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 135, "h": 233 },
+    "sourceSize": { "w": 135, "h": 233 },
+    "duration": 70
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.10.1-x64",
+  "image": "Antihero-Run-Forward.png",
+  "format": "RGBA8888",
+  "size": { "w": 1215, "h": 233 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer", "opacity": 255, "blendMode": "normal" },
+   { "name": "Head", "opacity": 255, "blendMode": "normal" },
+   { "name": "Hair", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
