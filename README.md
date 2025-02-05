@@ -1,1 +1,1 @@
-# itspeyman-fb-game
+# fb-game
